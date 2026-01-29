@@ -179,7 +179,59 @@ Swagger UI available at http://localhost:3000/api-docs
 
 ---
 
-## 🔍 1. GET /orders - Retrieve Orders
+## � Interactive API Documentation (Swagger UI)
+
+This project includes **Swagger UI** — an interactive, browser-based API documentation and testing tool. Access it at:
+
+```
+http://localhost:3000/api-docs
+```
+
+### Swagger UI Overview
+
+![Swagger UI Overview](./screenshots/swagger-overview.png)
+
+**What You See in Swagger UI:**
+
+The main page displays all 5 API endpoints organized under the "Orders" tag:
+
+| Color | Method | Endpoint | Description |
+|-------|--------|----------|-------------|
+| 🟦 Blue | `GET` | `/orders` | Retrieve orders with filtering, sorting, and pagination |
+| 🟩 Green | `POST` | `/orders` | Create a new order |
+| 🟦 Blue | `GET` | `/orders/export` | Export all orders as CSV or JSON |
+| 🟧 Orange | `PUT` | `/orders/{id}` | Update an existing order |
+| 🟥 Red | `DELETE` | `/orders/{id}` | Delete an order |
+
+**Key Interface Elements:**
+
+1. **API Title & Version**: "Orders Management API v1.0.0"
+2. **Server Dropdown**: Select between development/production servers
+3. **Expandable Endpoints**: Click any endpoint to see full documentation
+4. **Schema Definitions**: View request/response structures
+
+### How to Use Swagger UI
+
+1. **Navigate** to `http://localhost:3000/api-docs`
+2. **Click** on any endpoint to expand it
+3. **Click "Try it out"** to enable input fields
+4. **Fill in parameters** (query params, request body, path params)
+5. **Click "Execute"** to send the request
+6. **View the response** including status code, headers, and body
+
+### Benefits
+
+| Feature | Description |
+|---------|-------------|
+| **Interactive Testing** | Test all endpoints without writing curl commands |
+| **Auto-Generated Curl** | Copy the exact curl command for each request |
+| **Schema Visualization** | See request/response structures with examples |
+| **Real-Time Responses** | View actual server responses with headers |
+| **Rate Limit Monitoring** | Check remaining requests via response headers |
+
+---
+
+## �🔍 1. GET /orders - Retrieve Orders
 
 Retrieve orders with powerful filtering, sorting, and pagination.
 
@@ -467,58 +519,6 @@ As shown in the screenshot, the export endpoint also handles error responses for
 ![JSON File Opened](./screenshots/orders-export-response-json-file-opened.png)
 
 The downloaded JSON file is pretty-printed with 2-space indentation for readability.
-
----
-
-## 📖 Interactive API Documentation (Swagger UI)
-
-This project includes **Swagger UI** — an interactive, browser-based API documentation and testing tool. Access it at:
-
-```
-http://localhost:3000/api-docs
-```
-
-### Swagger UI Overview
-
-![Swagger UI Overview](./screenshots/swagger-overview.png)
-
-**What You See in Swagger UI:**
-
-The main page displays all 5 API endpoints organized under the "Orders" tag:
-
-| Color | Method | Endpoint | Description |
-|-------|--------|----------|-------------|
-| 🟦 Blue | `GET` | `/orders` | Retrieve orders with filtering, sorting, and pagination |
-| 🟩 Green | `POST` | `/orders` | Create a new order |
-| 🟦 Blue | `GET` | `/orders/export` | Export all orders as CSV or JSON |
-| 🟧 Orange | `PUT` | `/orders/{id}` | Update an existing order |
-| 🟥 Red | `DELETE` | `/orders/{id}` | Delete an order |
-
-**Key Interface Elements:**
-
-1. **API Title & Version**: "Orders Management API v1.0.0"
-2. **Server Dropdown**: Select between development/production servers
-3. **Expandable Endpoints**: Click any endpoint to see full documentation
-4. **Schema Definitions**: View request/response structures
-
-### How to Use Swagger UI
-
-1. **Navigate** to `http://localhost:3000/api-docs`
-2. **Click** on any endpoint to expand it
-3. **Click "Try it out"** to enable input fields
-4. **Fill in parameters** (query params, request body, path params)
-5. **Click "Execute"** to send the request
-6. **View the response** including status code, headers, and body
-
-### Benefits
-
-| Feature | Description |
-|---------|-------------|
-| **Interactive Testing** | Test all endpoints without writing curl commands |
-| **Auto-Generated Curl** | Copy the exact curl command for each request |
-| **Schema Visualization** | See request/response structures with examples |
-| **Real-Time Responses** | View actual server responses with headers |
-| **Rate Limit Monitoring** | Check remaining requests via response headers |
 
 ---
 
