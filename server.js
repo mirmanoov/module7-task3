@@ -15,7 +15,7 @@ const limiter = rateLimit({
   message: {
     error: 'Too many requests',
     message: 'You have exceeded the 100 requests in 15 minutes limit!',
-    retryAfter: '15 minutes'
+    retryAfter: '15 minutes',
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -31,23 +31,23 @@ const swaggerOptions = {
       description: 'A REST API for managing orders with pagination and filtering support',
       contact: {
         name: 'API Support',
-        email: 'support@ordersapi.com'
-      }
+        email: 'support@ordersapi.com',
+      },
     },
     servers: [
       {
         url: `http://localhost:${PORT}`,
-        description: 'Development server'
-      }
+        description: 'Development server',
+      },
     ],
     tags: [
       {
         name: 'Orders',
-        description: 'Order management endpoints'
-      }
-    ]
+        description: 'Order management endpoints',
+      },
+    ],
   },
-  apis: ['./server.js'] // Path to the API routes
+  apis: ['./server.js'], // Path to the API routes
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -195,10 +195,19 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  */
 // GET /orders - Retrieve orders with pagination and filtering
 app.get('/orders', (req, res) => {
-  // Extract query parameters
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const status = req.query.status;
+  // Extract and validate query parameters
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  let limit = parseInt(req.query.limit, 10) || 10;
+
+  // SECURITY: Enforce maximum limit of 100
+  if (limit > 100) {
+    limit = 100;
+  }
+
+  // Ensure limit is at least 1
+  limit = Math.max(1, limit);
+
+  const { status } = req.query;
   const minAmount = parseFloat(req.query.min_amount);
   const maxAmount = parseFloat(req.query.max_amount);
   const startDate = req.query.start_date;
@@ -206,14 +215,15 @@ app.get('/orders', (req, res) => {
   const sortBy = req.query.sort_by || 'date_created';
   const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
 
-  // Validate sort_by to prevent SQL injection
+  // SECURITY: Validate sort_by to prevent SQL injection (whitelist approach)
   const allowedSortFields = ['id', 'date_created', 'amount', 'status', 'item_name'];
   const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'date_created';
 
   // Calculate offset for pagination
   const offset = (page - 1) * limit;
 
-  // Build dynamic WHERE clause
+  // SECURITY: Build dynamic WHERE clause using parameterized queries
+  // All user inputs are passed as parameters, NOT concatenated into SQL
   const conditions = [];
   const params = [];
 
@@ -222,12 +232,12 @@ app.get('/orders', (req, res) => {
     params.push(status);
   }
 
-  if (!isNaN(minAmount)) {
+  if (!Number.isNaN(minAmount)) {
     conditions.push('amount >= ?');
     params.push(minAmount);
   }
 
-  if (!isNaN(maxAmount)) {
+  if (!Number.isNaN(maxAmount)) {
     conditions.push('amount <= ?');
     params.push(maxAmount);
   }
@@ -242,22 +252,25 @@ app.get('/orders', (req, res) => {
     params.push(endDate);
   }
 
-  const whereClause = conditions.length > 0 
-    ? 'WHERE ' + conditions.join(' AND ') 
+  const whereClause = conditions.length > 0
+    ? `WHERE ${conditions.join(' AND ')}`
     : '';
 
-  // Query to get total count
+  // PERFORMANCE: Query to get total count efficiently
+  // COUNT(*) is optimized by SQLite and doesn't load actual row data
   const countQuery = `SELECT COUNT(*) as total FROM orders ${whereClause}`;
-  
-  db.get(countQuery, params, (err, countResult) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error', details: err.message });
+
+  db.get(countQuery, params, (countErr, countResult) => {
+    if (countErr) {
+      return res.status(500).json({ error: 'Database error', details: countErr.message });
     }
 
     const totalRecords = countResult.total;
     const totalPages = Math.ceil(totalRecords / limit);
 
-    // Query to get paginated data with sorting
+    // SECURITY: Query to get paginated data with sorting
+    // sortField is validated against whitelist, order is hardcoded to DESC/ASC
+    // All other values are parameterized
     const dataQuery = `
       SELECT id, item_name, amount, status, date_created 
       FROM orders 
@@ -268,9 +281,9 @@ app.get('/orders', (req, res) => {
 
     const dataParams = [...params, limit, offset];
 
-    db.all(dataQuery, dataParams, (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error', details: err.message });
+    db.all(dataQuery, dataParams, (dataErr, rows) => {
+      if (dataErr) {
+        return res.status(500).json({ error: 'Database error', details: dataErr.message });
       }
 
       res.json({
@@ -282,8 +295,8 @@ app.get('/orders', (req, res) => {
           totalRecords,
           totalPages,
           hasNextPage: page < totalPages,
-          hasPrevPage: page > 1
-        }
+          hasPrevPage: page > 1,
+        },
       });
     });
   });
@@ -324,13 +337,13 @@ app.get('/orders', (req, res) => {
  */
 // GET /orders/export - Export orders data
 app.get('/orders/export', (req, res) => {
-  const format = req.query.format;
+  const { format } = req.query;
 
   // Validate format parameter
   if (!format || !['json', 'csv'].includes(format)) {
     return res.status(400).json({
       error: 'Invalid format',
-      message: 'Format must be either "json" or "csv"'
+      message: 'Format must be either "json" or "csv"',
     });
   }
 
@@ -360,13 +373,12 @@ app.get('/orders/export', (req, res) => {
       } catch (error) {
         return res.status(500).json({
           error: 'CSV conversion error',
-          details: error.message
+          details: error.message,
         });
       }
     }
   });
 });
-
 
 /**
  * @swagger
@@ -463,39 +475,42 @@ app.get('/orders/export', (req, res) => {
  */
 // POST /orders - Create a new order
 app.post('/orders', (req, res) => {
+  // eslint-disable-next-line camelcase
   const { item_name, amount, status } = req.body;
 
   // Validation
+  // eslint-disable-next-line camelcase
   if (!item_name || amount === undefined || amount === null || !status) {
-    return res.status(400).json({ 
-      error: 'Missing required fields', 
-      required: ['item_name', 'amount', 'status'] 
+    return res.status(400).json({
+      error: 'Missing required fields',
+      required: ['item_name', 'amount', 'status'],
     });
   }
 
   if (typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({ 
-      error: 'Invalid amount', 
-      message: 'Amount must be a number greater than 0' 
+    return res.status(400).json({
+      error: 'Invalid amount',
+      message: 'Amount must be a number greater than 0',
     });
   }
 
   const validStatuses = ['pending', 'shipped', 'delivered'];
   if (!validStatuses.includes(status)) {
-    return res.status(400).json({ 
-      error: 'Invalid status', 
-      message: `Status must be one of: ${validStatuses.join(', ')}` 
+    return res.status(400).json({
+      error: 'Invalid status',
+      message: `Status must be one of: ${validStatuses.join(', ')}`,
     });
   }
 
   // Insert into database using parameterized query
   const dateCreated = new Date().toISOString();
   const insertQuery = `
-    INSERT INTO orders (item_name, amount, status, date_created)
+    INSERT INTO orders (item_name, amount, status, date_created) /* eslint-disable-line camelcase */
     VALUES (?, ?, ?, ?)
   `;
 
-  db.run(insertQuery, [item_name, amount, status, dateCreated], function(err) {
+  // eslint-disable-next-line camelcase
+  db.run(insertQuery, [item_name, amount, status, dateCreated], function insertCallback(err) {
     if (err) {
       return res.status(500).json({ error: 'Database error', details: err.message });
     }
@@ -505,11 +520,11 @@ app.post('/orders', (req, res) => {
       message: 'Order created successfully',
       data: {
         id: this.lastID,
-        item_name,
+        item_name, // eslint-disable-line camelcase
         amount,
         status,
-        date_created: dateCreated
-      }
+        date_created: dateCreated,
+      },
     });
   });
 });
@@ -586,14 +601,14 @@ app.post('/orders', (req, res) => {
  */
 // PUT /orders/:id - Update an order
 app.put('/orders/:id', (req, res) => {
-  const orderId = parseInt(req.params.id);
+  const orderId = parseInt(req.params.id, 10);
   const { amount, status } = req.body;
 
   // Validate that at least one field is provided
   if (amount === undefined && !status) {
     return res.status(400).json({
       error: 'Missing update fields',
-      message: 'At least one of amount or status must be provided'
+      message: 'At least one of amount or status must be provided',
     });
   }
 
@@ -601,7 +616,7 @@ app.put('/orders/:id', (req, res) => {
   if (amount !== undefined && (typeof amount !== 'number' || amount <= 0)) {
     return res.status(400).json({
       error: 'Invalid amount',
-      message: 'Amount must be a number greater than 0'
+      message: 'Amount must be a number greater than 0',
     });
   }
 
@@ -611,7 +626,7 @@ app.put('/orders/:id', (req, res) => {
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         error: 'Invalid status',
-        message: `Status must be one of: ${validStatuses.join(', ')}`
+        message: `Status must be one of: ${validStatuses.join(', ')}`,
       });
     }
   }
@@ -625,7 +640,7 @@ app.put('/orders/:id', (req, res) => {
     if (!order) {
       return res.status(404).json({
         error: 'Order not found',
-        message: `No order found with ID ${orderId}`
+        message: `No order found with ID ${orderId}`,
       });
     }
 
@@ -647,21 +662,21 @@ app.put('/orders/:id', (req, res) => {
 
     const updateQuery = `UPDATE orders SET ${updates.join(', ')} WHERE id = ?`;
 
-    db.run(updateQuery, params, function(err) {
-      if (err) {
-        return res.status(500).json({ error: 'Database error', details: err.message });
+    db.run(updateQuery, params, (updateErr) => {
+      if (updateErr) {
+        return res.status(500).json({ error: 'Database error', details: updateErr.message });
       }
 
       // Fetch the updated order
-      db.get('SELECT * FROM orders WHERE id = ?', [orderId], (err, updatedOrder) => {
-        if (err) {
-          return res.status(500).json({ error: 'Database error', details: err.message });
+      db.get('SELECT * FROM orders WHERE id = ?', [orderId], (getErr, updatedOrder) => {
+        if (getErr) {
+          return res.status(500).json({ error: 'Database error', details: getErr.message });
         }
 
         res.json({
           success: true,
           message: 'Order updated successfully',
-          data: updatedOrder
+          data: updatedOrder,
         });
       });
     });
@@ -692,7 +707,7 @@ app.put('/orders/:id', (req, res) => {
  */
 // DELETE /orders/:id - Delete an order
 app.delete('/orders/:id', (req, res) => {
-  const orderId = parseInt(req.params.id);
+  const orderId = parseInt(req.params.id, 10);
 
   // First, check if order exists
   db.get('SELECT * FROM orders WHERE id = ?', [orderId], (err, order) => {
@@ -703,14 +718,14 @@ app.delete('/orders/:id', (req, res) => {
     if (!order) {
       return res.status(404).json({
         error: 'Order not found',
-        message: `No order found with ID ${orderId}`
+        message: `No order found with ID ${orderId}`,
       });
     }
 
     // Delete the order
-    db.run('DELETE FROM orders WHERE id = ?', [orderId], function(err) {
-      if (err) {
-        return res.status(500).json({ error: 'Database error', details: err.message });
+    db.run('DELETE FROM orders WHERE id = ?', [orderId], (deleteErr) => {
+      if (deleteErr) {
+        return res.status(500).json({ error: 'Database error', details: deleteErr.message });
       }
 
       res.status(204).send();
@@ -729,11 +744,11 @@ app.use((req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Error:', err.stack);
-  res.status(500).json({ 
-    error: 'Internal server error', 
-    message: err.message 
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message,
   });
 });
 

@@ -1,6 +1,5 @@
 const request = require('supertest');
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 
 // Create a test database
 let db;
@@ -26,10 +25,10 @@ beforeAll((done) => {
       )
     `;
 
-    db.run(createTableQuery, (err) => {
-      if (err) {
-        console.error('Error creating table:', err);
-        done(err);
+    db.run(createTableQuery, (createErr) => {
+      if (createErr) {
+        console.error('Error creating table:', createErr);
+        done(createErr);
         return;
       }
 
@@ -59,25 +58,26 @@ beforeAll((done) => {
         ['Cooling Fan', 40.00, 'shipped', '2026-01-17T10:00:00.000Z'],
         ['Power Supply', 110.00, 'delivered', '2026-01-18T10:00:00.000Z'],
         ['Case', 85.00, 'pending', '2026-01-19T10:00:00.000Z'],
-        ['Motherboard', 250.00, 'shipped', '2026-01-20T10:00:00.000Z']
+        ['Motherboard', 250.00, 'shipped', '2026-01-20T10:00:00.000Z'],
       ];
 
       let completed = 0;
       testOrders.forEach((order) => {
-        db.run(insertQuery, order, (err) => {
-          if (err) {
-            console.error('Error inserting test data:', err);
-            done(err);
+        db.run(insertQuery, order, (insertErr) => {
+          if (insertErr) {
+            console.error('Error inserting test data:', insertErr);
+            done(insertErr);
             return;
           }
-          completed++;
+          completed += 1;
           if (completed === testOrders.length) {
             // Override the database module for testing
             require.cache[require.resolve('./database')] = {
-              exports: db
+              exports: db,
             };
-            
+
             // Load the app after database is ready
+            // eslint-disable-next-line global-require
             app = require('./server');
             done();
           }
@@ -106,7 +106,7 @@ describe('POST /orders', () => {
     const newOrder = {
       item_name: 'Test Product',
       amount: 99.99,
-      status: 'pending'
+      status: 'pending',
     };
 
     const response = await request(app)
@@ -125,7 +125,7 @@ describe('POST /orders', () => {
   test('Should fail if item_name is missing (400 status)', async () => {
     const invalidOrder = {
       amount: 50.00,
-      status: 'pending'
+      status: 'pending',
     };
 
     const response = await request(app)
@@ -139,7 +139,7 @@ describe('POST /orders', () => {
   test('Should fail if amount is missing (400 status)', async () => {
     const invalidOrder = {
       item_name: 'Test Item',
-      status: 'pending'
+      status: 'pending',
     };
 
     const response = await request(app)
@@ -154,7 +154,7 @@ describe('POST /orders', () => {
     const invalidOrder = {
       item_name: 'Test Item',
       amount: -10,
-      status: 'pending'
+      status: 'pending',
     };
 
     const response = await request(app)
@@ -169,7 +169,7 @@ describe('POST /orders', () => {
     const invalidOrder = {
       item_name: 'Test Item',
       amount: 0,
-      status: 'pending'
+      status: 'pending',
     };
 
     const response = await request(app)
@@ -184,7 +184,7 @@ describe('POST /orders', () => {
     const invalidOrder = {
       item_name: 'Test Item',
       amount: 50.00,
-      status: 'invalid_status'
+      status: 'invalid_status',
     };
 
     const response = await request(app)
@@ -227,7 +227,7 @@ describe('GET /orders - Pagination', () => {
     expect(response.body.data).toHaveLength(5);
     expect(response.body.pagination.page).toBe(2);
     expect(response.body.pagination.hasPrevPage).toBe(true);
-    
+
     // Verify that page 2 has different IDs than page 1
     expect(response.body.data[0].id).toBeGreaterThan(5);
   });
@@ -241,6 +241,20 @@ describe('GET /orders - Pagination', () => {
     expect(response.body.data).toHaveLength(0);
     expect(response.body.pagination.page).toBe(999);
   });
+
+  test('Should cap limit at 100 if user requests more', async () => {
+    const response = await request(app)
+      .get('/orders?limit=500')
+      .expect(200);
+
+    expect(response.body.success).toBe(true);
+    // Should be capped at 100, not 500
+    expect(response.body.pagination.limit).toBe(100);
+    // Should return at most 100 items (we have 20 test orders, so expect 20)
+    expect(response.body.data.length).toBeLessThanOrEqual(100);
+    // Verify the actual data length matches what we have (20 orders + 1 from POST test)
+    expect(response.body.data.length).toBeGreaterThan(0);
+  });
 });
 
 describe('GET /orders - Filtering', () => {
@@ -251,9 +265,9 @@ describe('GET /orders - Filtering', () => {
 
     expect(response.body.success).toBe(true);
     expect(response.body.data.length).toBeGreaterThan(0);
-    
+
     // Verify all returned orders have pending status
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       expect(order.status).toBe('pending');
     });
   });
@@ -264,9 +278,9 @@ describe('GET /orders - Filtering', () => {
       .expect(200);
 
     expect(response.body.success).toBe(true);
-    
+
     // Verify all returned orders have shipped status
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       expect(order.status).toBe('shipped');
     });
   });
@@ -277,9 +291,9 @@ describe('GET /orders - Filtering', () => {
       .expect(200);
 
     expect(response.body.success).toBe(true);
-    
+
     // Verify all returned orders are within the amount range
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       expect(order.amount).toBeGreaterThanOrEqual(50);
       expect(order.amount).toBeLessThanOrEqual(200);
     });
@@ -301,9 +315,9 @@ describe('GET /orders - Filtering', () => {
       .expect(200);
 
     expect(response.body.success).toBe(true);
-    
+
     // Verify all returned orders match both filters
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       expect(order.status).toBe('pending');
       expect(order.amount).toBeGreaterThanOrEqual(100);
       expect(order.amount).toBeLessThanOrEqual(500);
@@ -342,13 +356,13 @@ describe('GET /orders - Date Filtering', () => {
 
     expect(response.body.success).toBe(true);
     expect(response.body.data.length).toBeGreaterThan(0);
-    
+
     // Verify all returned orders are within the date range
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       const orderDate = new Date(order.date_created);
       const startDate = new Date('2026-01-10');
       const endDate = new Date('2026-01-15');
-      
+
       expect(orderDate.getTime()).toBeGreaterThanOrEqual(startDate.getTime());
       expect(orderDate.getTime()).toBeLessThanOrEqual(endDate.getTime());
     });
@@ -371,12 +385,12 @@ describe('GET /orders - Date Filtering', () => {
       .expect(200);
 
     expect(response.body.success).toBe(true);
-    
+
     // Verify all returned orders are on or after start_date
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       const orderDate = new Date(order.date_created);
       const startDate = new Date('2026-01-15');
-      
+
       expect(orderDate.getTime()).toBeGreaterThanOrEqual(startDate.getTime());
     });
   });
@@ -387,12 +401,12 @@ describe('GET /orders - Date Filtering', () => {
       .expect(200);
 
     expect(response.body.success).toBe(true);
-    
+
     // Verify all returned orders are on or before end_date
-    response.body.data.forEach(order => {
+    response.body.data.forEach((order) => {
       const orderDate = new Date(order.date_created);
       const endDate = new Date('2026-01-10');
-      
+
       expect(orderDate.getTime()).toBeLessThanOrEqual(endDate.getTime());
     });
   });

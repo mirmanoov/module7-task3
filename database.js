@@ -4,15 +4,15 @@ const path = require('path');
 // Connect to SQLite database file
 const db = new sqlite3.Database(
   path.join(__dirname, 'orders.db'),
-  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, // eslint-disable-line no-bitwise
   (err) => {
     if (err) {
       console.error('Error connecting to SQLite database:', err.message);
       process.exit(1);
     }
-    
+
     console.log('Connected to SQLite');
-    
+
     // Create orders table if it doesn't exist
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS orders (
@@ -23,15 +23,15 @@ const db = new sqlite3.Database(
         date_created TEXT NOT NULL
       )
     `;
-    
-    db.run(createTableQuery, (err) => {
-      if (err) {
-        console.error('Error creating orders table:', err.message);
+
+    db.run(createTableQuery, (createErr) => {
+      if (createErr) {
+        console.error('Error creating orders table:', createErr.message);
       } else {
         console.log('Orders table ready');
       }
     });
-  }
+  },
 );
 
 // Export the database connection
