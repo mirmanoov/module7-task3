@@ -24,6 +24,7 @@ This pagination feature was implemented using **Cursor AI Assistant**. Review th
 - [Pagination Feature](#-pagination-feature)
 - [Quick Start](#-quick-start)
 - [API Documentation](#-api-documentation)
+- [Interactive API Documentation (Swagger UI)](#-interactive-api-documentation-swagger-ui)
 - [Evidence Screenshots](#-evidence-screenshots)
 - [Testing](#-testing)
 - [Security](#-security)
@@ -227,7 +228,46 @@ Full documentation available at `http://localhost:3000/api-docs` (Swagger UI)
 
 ---
 
-## 📸 Evidence Screenshots
+## � Interactive API Documentation (Swagger UI)
+
+Access the interactive Swagger UI documentation at:
+
+```
+http://localhost:3000/api-docs
+```
+
+### Swagger Overview
+
+![Swagger UI Overview](./screenshots/swagger-overview.png)
+
+The Swagger UI provides a complete interactive interface for testing all API endpoints. For Task 4, the most relevant endpoint is **GET /orders** which showcases the pagination and filtering features.
+
+### GET /orders - Pagination Interface
+
+![GET Orders Expanded](./screenshots/get-orders-expanded.png)
+
+The Swagger UI for GET /orders displays all query parameters including:
+- **Pagination**: `page`, `limit` (max 100)
+- **Filtering**: `status`, `min_amount`, `max_amount`, `start_date`, `end_date`
+- **Sorting**: `sort_by`, `order`
+
+### Example Response
+
+![GET Orders Response](./screenshots/get-orders-response-part1.png)
+
+The response includes:
+- **data**: Array of order objects
+- **pagination**: Metadata with `page`, `limit`, `totalRecords`, `totalPages`, `hasNextPage`, `hasPrevPage`
+
+**Benefits of Swagger UI**:
+- ✅ Test pagination parameters interactively
+- ✅ Try different filter combinations
+- ✅ See real-time response schemas
+- ✅ Validate request/response formats
+
+---
+
+## �📸 Evidence Screenshots
 
 ### ESLint Compliance (0 Errors)
 
@@ -447,10 +487,3 @@ CREATE TABLE orders (
 
 ---
 
-## 👨‍💻 Author
-
-**Kambar Mirmanov**  
-EPAM - Node.js Development  
-Module 7, Task 4 - Pagination Feature Implementation
-
-**Repository**: [github.com/mirmanoov/module7-task3](https://github.com/mirmanoov/module7-task3)
