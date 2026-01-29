@@ -155,44 +155,89 @@ Swagger UI available at http://localhost:3000/api-docs
 
 ---
 
+## 📖 Interactive API Documentation (Swagger UI)
+
+This project includes **Swagger UI** — an interactive, browser-based API documentation and testing tool. Access it at:
+
+```
+http://localhost:3000/api-docs
+```
+
+### Swagger UI Overview
+
+![Swagger UI Overview](./screenshots/swagger-overview.png)
+
+**What You See in Swagger UI:**
+
+The main page displays all 5 API endpoints organized under the "Orders" tag:
+
+| Color | Method | Endpoint | Description |
+|-------|--------|----------|-------------|
+| 🟦 Blue | `GET` | `/orders` | Retrieve orders with filtering, sorting, and pagination |
+| 🟩 Green | `POST` | `/orders` | Create a new order |
+| 🟦 Blue | `GET` | `/orders/export` | Export all orders as CSV or JSON |
+| 🟧 Orange | `PUT` | `/orders/{id}` | Update an existing order |
+| 🟥 Red | `DELETE` | `/orders/{id}` | Delete an order |
+
+**Key Interface Elements:**
+
+1. **API Title & Version**: "Orders Management API v1.0.0"
+2. **Server Dropdown**: Select between development/production servers
+3. **Expandable Endpoints**: Click any endpoint to see full documentation
+4. **Schema Definitions**: View request/response structures
+
+### How to Use Swagger UI
+
+1. **Navigate** to `http://localhost:3000/api-docs`
+2. **Click** on any endpoint to expand it
+3. **Click "Try it out"** to enable input fields
+4. **Fill in parameters** (query params, request body, path params)
+5. **Click "Execute"** to send the request
+6. **View the response** including status code, headers, and body
+
+### Benefits
+
+| Feature | Description |
+|---------|-------------|
+| **Interactive Testing** | Test all endpoints without writing curl commands |
+| **Auto-Generated Curl** | Copy the exact curl command for each request |
+| **Schema Visualization** | See request/response structures with examples |
+| **Real-Time Responses** | View actual server responses with headers |
+| **Rate Limit Monitoring** | Check remaining requests via response headers |
+
+---
+
 ## 📚 API Endpoints
 
 ### Endpoint Summary
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/orders` | Retrieve orders with filtering/sorting/pagination | No |
-| `POST` | `/orders` | Create a new order | No |
-| `PUT` | `/orders/{id}` | Update order status and/or amount | No |
-| `DELETE` | `/orders/{id}` | Remove an order from the database | No |
-| `GET` | `/orders/export` | Export all orders (CSV or JSON) | No |
-| `GET` | `/health` | Server health check | No |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/orders` | Retrieve orders with filtering, sorting, pagination |
+| `POST` | `/orders` | Create a new order |
+| `GET` | `/orders/export` | Export all orders (CSV or JSON) |
+| `PUT` | `/orders/{id}` | Update order status and/or amount |
+| `DELETE` | `/orders/{id}` | Delete an order |
 
 ---
 
-## 🔍 GET /orders - Retrieve Orders
+## 🔍 1. GET /orders - Retrieve Orders
 
-Retrieve orders from the database with powerful filtering, sorting, and pagination capabilities.
-
-### Endpoint
-
-```
-GET /orders
-```
+Retrieve orders with powerful filtering, sorting, and pagination.
 
 ### Query Parameters
 
-| Parameter | Type | Default | Range | Description |
-|-----------|------|---------|-------|-------------|
-| `page` | integer | `1` | 1 - ∞ | Page number for pagination |
-| `limit` | integer | `10` | 1 - 100 | Number of orders per page |
-| `status` | string | - | `pending`, `shipped`, `delivered`, `cancelled` | Filter by order status |
-| `min_amount` | number | - | 0 - ∞ | Minimum order amount (inclusive) |
-| `max_amount` | number | - | 0 - ∞ | Maximum order amount (inclusive) |
-| `start_date` | string | - | YYYY-MM-DD | Orders created on or after this date |
-| `end_date` | string | - | YYYY-MM-DD | Orders created on or before this date |
-| `sort_by` | string | `date_created` | `id`, `date_created`, `amount`, `status`, `item_name` | Field to sort by |
-| `order` | string | `asc` | `asc`, `desc` | Sort direction |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | `1` | Page number |
+| `limit` | integer | `10` | Items per page (1-100) |
+| `status` | string | - | Filter: `pending`, `shipped`, `delivered`, `cancelled` |
+| `min_amount` | number | - | Minimum amount (inclusive) |
+| `max_amount` | number | - | Maximum amount (inclusive) |
+| `start_date` | string | - | Start date (YYYY-MM-DD) |
+| `end_date` | string | - | End date (YYYY-MM-DD) |
+| `sort_by` | string | `date_created` | Sort field: `id`, `date_created`, `amount`, `status`, `item_name` |
+| `order` | string | `asc` | Sort direction: `asc` or `desc` |
 
 ### Response Schema
 
@@ -200,439 +245,133 @@ GET /orders
 {
   "success": true,
   "data": [
-    {
-      "id": 1,
-      "item_name": "Wireless Mouse",
-      "amount": 49.99,
-      "status": "pending",
-      "date_created": "2026-01-14T05:08:44.152Z"
-    }
+    { "id": 1, "item_name": "Laptop", "amount": 999.99, "status": "pending", "date_created": "2026-01-29T..." }
   ],
   "pagination": {
-    "page": 1,
-    "limit": 10,
-    "totalRecords": 50,
-    "totalPages": 5,
-    "hasNextPage": true,
-    "hasPrevPage": false
+    "page": 1, "limit": 10, "totalRecords": 50, "totalPages": 5, "hasNextPage": true, "hasPrevPage": false
   }
 }
 ```
 
-### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | boolean | Indicates if the request was successful |
-| `data` | array | Array of order objects matching the query |
-| `pagination.page` | integer | Current page number |
-| `pagination.limit` | integer | Number of items per page |
-| `pagination.totalRecords` | integer | Total number of matching orders |
-| `pagination.totalPages` | integer | Total number of pages available |
-| `pagination.hasNextPage` | boolean | Whether more pages exist after current |
-| `pagination.hasPrevPage` | boolean | Whether pages exist before current |
-
-### HTTP Status Codes
-
-| Code | Description | Scenario |
-|------|-------------|----------|
-| `200` | OK | Orders retrieved successfully |
-| `429` | Too Many Requests | Rate limit exceeded (100 req/15min) |
-| `500` | Internal Server Error | Database connection failed |
-
 ### Examples
 
-#### Basic Request (Default Pagination)
-
 ```bash
+# Basic request (default pagination)
 curl "http://localhost:3000/orders"
+
+# Filter by status and sort
+curl "http://localhost:3000/orders?status=pending&sort_by=amount&order=desc"
+
+# Combined filters with pagination
+curl "http://localhost:3000/orders?status=pending&min_amount=100&start_date=2026-01-01&page=1&limit=5"
 ```
 
-Returns the first 10 orders sorted by date_created ascending.
-
-#### Pagination
-
-```bash
-# Get page 2 with 5 items per page
-curl "http://localhost:3000/orders?page=2&limit=5"
-```
-
-#### Filter by Status
-
-```bash
-# Get only pending orders
-curl "http://localhost:3000/orders?status=pending"
-
-# Get only shipped orders
-curl "http://localhost:3000/orders?status=shipped"
-```
-
-#### Filter by Amount Range
-
-```bash
-# Orders between $50 and $200
-curl "http://localhost:3000/orders?min_amount=50&max_amount=200"
-
-# Orders over $100
-curl "http://localhost:3000/orders?min_amount=100"
-```
-
-#### Filter by Date Range
-
-```bash
-# Orders from January 2026
-curl "http://localhost:3000/orders?start_date=2026-01-01&end_date=2026-01-31"
-
-# Orders from the last week
-curl "http://localhost:3000/orders?start_date=2026-01-22"
-```
-
-#### Sorting
-
-```bash
-# Sort by amount, highest first
-curl "http://localhost:3000/orders?sort_by=amount&order=desc"
-
-# Sort by item name alphabetically
-curl "http://localhost:3000/orders?sort_by=item_name&order=asc"
-
-# Most recent orders first
-curl "http://localhost:3000/orders?sort_by=date_created&order=desc"
-```
-
-#### Combined Filters
-
-```bash
-# Pending orders over $100, sorted by amount descending, page 1 with 5 results
-curl "http://localhost:3000/orders?status=pending&min_amount=100&sort_by=amount&order=desc&page=1&limit=5"
-```
-
-### Swagger UI Screenshot
+### Swagger UI - GET /orders
 
 ![GET Orders - Expanded Interface](./screenshots/get-orders-expanded.png)
 
-**What This Screenshot Shows:**
-
-The GET /orders endpoint expanded in Swagger UI reveals all 9 query parameters:
-
-1. **page** (integer, default: 1) - Page number for pagination
-2. **limit** (integer, default: 5 shown) - Number of results per page
-3. **status** (string, dropdown: "pending") - Filter by order status
-4. **min_amount** (number) - Minimum order amount filter
-5. **max_amount** (number) - Maximum order amount filter
-6. **start_date** (string: "2026-01-01") - Start date for date range filter
-7. **end_date** (string: "2026-01-31") - End date for date range filter
-8. **sort_by** (string: "date_created") - Field to sort by
-9. **order** (string: "asc") - Sort direction
-
-Each parameter includes its type, description, and format hints (e.g., "YYYY-MM-DD format" for dates).
-
-### Response Screenshots
+The expanded GET endpoint shows all 9 query parameters with types, descriptions, and default values. Parameters include pagination (page, limit), filters (status, min_amount, max_amount, start_date, end_date), and sorting (sort_by, order).
 
 ![GET Orders - Response Part 1](./screenshots/get-orders-response-part1.png)
 
-**Response Analysis:**
-
-The screenshot shows the server response after executing a GET request with filters:
-
-- **Request URL**: `http://localhost:3000/orders?page=1&limit=5&status=pending&start_date=2026-01-01&end_date=2026-01-31&sort_by=date_created&order=asc`
-- **Status Code**: `200 OK` - Request successful
-- **Response Body**: JSON array containing 5 pending orders matching the date range filter
-
-**Key Observations:**
-- All returned orders have `"status": "pending"` (filter working correctly)
-- Orders are sorted by `date_created` in ascending order
-- Dates fall within the specified range (January 2026)
-- Response headers show rate limit information (`ratelimit-remaining: 91`)
+After clicking Execute, Swagger displays:
+- The generated **curl command**
+- **Request URL** with all query parameters
+- **Response body** with filtered orders
+- **Response headers** including rate limit information
 
 ![GET Orders - Response Part 2](./screenshots/get-orders-response-part2.png)
 
-**Documentation Section:**
-
-The lower portion shows Swagger's response documentation:
-
-- **200 Response Schema**: Example of successful response structure
-- **Pagination Object**: Shows all pagination fields with example values
-- **500 Error Schema**: Documents the database error response format
+The documentation section shows the response schema with pagination metadata and possible error responses (500 Database error).
 
 ---
 
-## ➕ POST /orders - Create Order
+## ➕ 2. POST /orders - Create Order
 
-Create a new order in the database with automatic validation.
+Create a new order with validation.
 
-### Endpoint
-
-```
-POST /orders
-```
-
-### Request Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Content-Type` | `application/json` | Yes |
-| `Accept` | `application/json` | Recommended |
-
-### Request Body Schema
+### Request Body
 
 ```json
 {
-  "item_name": "Laptop",
-  "amount": 999.99,
-  "status": "pending"
+  "item_name": "Laptop",    // Required: string
+  "amount": 999.99,         // Required: number > 0
+  "status": "pending"       // Required: pending|shipped|delivered|cancelled
 }
 ```
 
-### Request Fields
-
-| Field | Type | Required | Validation Rules |
-|-------|------|----------|-----------------|
-| `item_name` | string | ✅ Yes | Non-empty string, describes the ordered item |
-| `amount` | number | ✅ Yes | Must be greater than 0 (positive decimal) |
-| `status` | string | ✅ Yes | Must be one of: `pending`, `shipped`, `delivered`, `cancelled` |
-
-### Response Schema (201 Created)
+### Response (201 Created)
 
 ```json
 {
   "success": true,
   "message": "Order created successfully",
   "data": {
-    "id": 51,
+    "id": 51,                // Auto-generated
     "item_name": "Laptop",
     "amount": 999.99,
     "status": "pending",
-    "date_created": "2026-01-29T14:31:38.120Z"
+    "date_created": "2026-01-29T14:31:38.120Z"  // Auto-generated
   }
 }
 ```
 
-### Auto-Generated Fields
+### Validation Errors (400)
 
-| Field | Description |
-|-------|-------------|
-| `id` | Auto-incrementing unique identifier |
-| `date_created` | ISO 8601 timestamp of order creation (UTC) |
+| Error | Cause |
+|-------|-------|
+| `Missing required fields` | `item_name`, `amount`, or `status` not provided |
+| `Invalid amount` | Amount is 0, negative, or not a number |
+| `Invalid status` | Status not in allowed values |
 
-### HTTP Status Codes
-
-| Code | Description | Scenario |
-|------|-------------|----------|
-| `201` | Created | Order successfully created |
-| `400` | Bad Request | Validation failed (see error types below) |
-| `429` | Too Many Requests | Rate limit exceeded |
-| `500` | Internal Server Error | Database insert failed |
-
-### Validation Error Types
-
-| Error | Cause | Example Response |
-|-------|-------|------------------|
-| Missing required fields | `item_name`, `amount`, or `status` not provided | `{"error": "Missing required fields", "required": ["item_name", "amount", "status"]}` |
-| Invalid amount | Amount is 0, negative, or not a number | `{"error": "Invalid amount", "message": "Amount must be a positive number greater than 0"}` |
-| Invalid status | Status not in allowed values | `{"error": "Invalid status", "message": "Status must be one of: pending, shipped, delivered, cancelled"}` |
-
-### Examples
-
-#### Successful Creation
+### Example
 
 ```bash
 curl -X POST http://localhost:3000/orders \
   -H "Content-Type: application/json" \
-  -d '{
-    "item_name": "MacBook Pro 16-inch",
-    "amount": 2499.99,
-    "status": "pending"
-  }'
+  -d '{"item_name": "MacBook Pro", "amount": 2499.99, "status": "pending"}'
 ```
 
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "message": "Order created successfully",
-  "data": {
-    "id": 63,
-    "item_name": "MacBook Pro 16-inch",
-    "amount": 2499.99,
-    "status": "pending",
-    "date_created": "2026-01-29T15:00:00.000Z"
-  }
-}
-```
-
-#### Validation Error - Missing Fields
-
-```bash
-curl -X POST http://localhost:3000/orders \
-  -H "Content-Type: application/json" \
-  -d '{"item_name": "Test"}'
-```
-
-**Response (400 Bad Request):**
-```json
-{
-  "error": "Missing required fields",
-  "required": ["item_name", "amount", "status"]
-}
-```
-
-#### Validation Error - Invalid Amount
-
-```bash
-curl -X POST http://localhost:3000/orders \
-  -H "Content-Type: application/json" \
-  -d '{"item_name": "Test", "amount": 0, "status": "pending"}'
-```
-
-**Response (400 Bad Request):**
-```json
-{
-  "error": "Invalid amount",
-  "message": "Amount must be a positive number greater than 0"
-}
-```
-
-#### Validation Error - Invalid Status
-
-```bash
-curl -X POST http://localhost:3000/orders \
-  -H "Content-Type: application/json" \
-  -d '{"item_name": "Test", "amount": 50, "status": "processing"}'
-```
-
-**Response (400 Bad Request):**
-```json
-{
-  "error": "Invalid status",
-  "message": "Status must be one of: pending, shipped, delivered, cancelled"
-}
-```
-
-### Swagger UI Screenshots
+### Swagger UI - POST /orders
 
 ![POST Orders - Request Interface](./screenshots/post-orders-expanded.png)
 
-**Interface Analysis:**
-
-The POST endpoint interface in Swagger UI shows:
-
-- **Endpoint**: `POST /orders - Create a new order`
-- **Description**: "Add a new order to the database with validation"
-- **Parameters**: None (no query parameters for POST)
-- **Request body**: Required, with `application/json` content type
-
-**Request Body Editor:**
-```json
-{
-  "item_name": "Laptop",
-  "amount": 999.99,
-  "status": "pending"
-}
-```
-
-The editor shows:
-- Pre-filled example values for quick testing
-- JSON syntax highlighting
-- Edit Value / Schema toggle to view the schema definition
-- Execute button (blue) to send the request
-- Clear button to reset the form
+The POST interface shows the request body editor with example values pre-filled. You can edit the JSON directly and click Execute to create an order.
 
 ![POST Orders - Response Part 1](./screenshots/post-orders-response-part1.png)
 
-**Successful Response Analysis:**
-
-After clicking Execute, Swagger displays:
-
-1. **Curl Command**: The exact curl command that was executed
-   ```bash
-   curl -X 'POST' \
-     'http://localhost:3000/orders' \
-     -H 'accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -d '{"item_name": "Laptop", "amount": 999.99, "status": "pending"}'
-   ```
-
-2. **Request URL**: `http://localhost:3000/orders`
-
-3. **Server Response**:
-   - **Code**: `201` (Created - success!)
-   - **Response Body**:
-     ```json
-     {
-       "success": true,
-       "message": "Order created successfully",
-       "data": {
-         "id": 64,
-         "item_name": "Laptop",
-         "amount": 999.99,
-         "status": "pending",
-         "date_created": "2026-01-29T14:42:18.991Z"
-       }
-     }
-     ```
-
-4. **Response Headers**:
-   - `content-type: application/json; charset=utf-8`
-   - `ratelimit-limit: 100` (rate limit active)
-   - `ratelimit-remaining: 58`
+A successful response shows:
+- **Status 201 Created**
+- The generated **curl command** for replication
+- **Response body** with the new order including auto-generated `id` and `date_created`
+- **Response headers** with rate limit information
 
 ![POST Orders - Response Part 2](./screenshots/post-orders-response-part2.png)
 
-**Documentation Section:**
-
-Shows the possible response codes:
-
-- **201 - Order created successfully**: Schema with example response
-- **400 - Validation error**: Example showing missing fields error
-- **500 - Database error**: Example showing insert failure
+Documentation shows possible responses: 201 (success), 400 (validation error), and 500 (database error).
 
 ---
 
-## ✏️ PUT /orders/{id} - Update Order
+## ✏️ 3. PUT /orders/{id} - Update Order
 
 Update the status and/or amount of an existing order.
-
-### Endpoint
-
-```
-PUT /orders/{id}
-```
 
 ### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | integer | ✅ Yes | The unique identifier of the order to update |
+| `id` | integer | Yes | Order ID to update |
 
-### Request Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Content-Type` | `application/json` | Yes |
-
-### Request Body Schema
+### Request Body (Optional Fields)
 
 ```json
 {
-  "amount": 1299.99,
-  "status": "shipped"
+  "amount": 1299.99,    // Optional: new amount
+  "status": "shipped"   // Optional: new status
 }
 ```
 
-**Note**: Both fields are optional. You can update:
-- Only `amount`
-- Only `status`
-- Both `amount` and `status`
-
-### Request Fields
-
-| Field | Type | Required | Validation Rules |
-|-------|------|----------|-----------------|
-| `amount` | number | Optional | If provided, must be greater than 0 |
-| `status` | string | Optional | If provided, must be: `pending`, `shipped`, `delivered`, or `cancelled` |
-
-### Response Schema (200 OK)
+### Response (200 OK)
 
 ```json
 {
@@ -640,424 +379,136 @@ PUT /orders/{id}
   "message": "Order updated successfully",
   "data": {
     "id": 8,
-    "item_name": "Laptop",
-    "amount": 1299.99,
-    "status": "shipped",
-    "date_created": "2026-01-15T08:30:00.000Z"
+    "item_name": "Laptop",       // Unchanged
+    "amount": 1299.99,           // Updated
+    "status": "shipped",         // Updated
+    "date_created": "2026-01-15T..." // Unchanged
   }
 }
 ```
 
-### HTTP Status Codes
-
-| Code | Description | Scenario |
-|------|-------------|----------|
-| `200` | OK | Order updated successfully |
-| `400` | Bad Request | Invalid amount or status value |
-| `404` | Not Found | No order exists with the given ID |
-| `429` | Too Many Requests | Rate limit exceeded |
-| `500` | Internal Server Error | Database update failed |
-
 ### Examples
 
-#### Update Status Only
-
 ```bash
-curl -X PUT http://localhost:3000/orders/1 \
-  -H "Content-Type: application/json" \
-  -d '{"status": "shipped"}'
+# Update status only
+curl -X PUT http://localhost:3000/orders/1 -H "Content-Type: application/json" -d '{"status": "shipped"}'
+
+# Update both fields
+curl -X PUT http://localhost:3000/orders/1 -H "Content-Type: application/json" -d '{"amount": 1299.99, "status": "delivered"}'
 ```
 
-#### Update Amount Only
-
-```bash
-curl -X PUT http://localhost:3000/orders/1 \
-  -H "Content-Type: application/json" \
-  -d '{"amount": 599.99}'
-```
-
-#### Update Both Fields
-
-```bash
-curl -X PUT http://localhost:3000/orders/1 \
-  -H "Content-Type: application/json" \
-  -d '{"amount": 1299.99, "status": "delivered"}'
-```
-
-### Swagger UI Screenshots
+### Swagger UI - PUT /orders/{id}
 
 ![PUT Orders - Request Interface](./screenshots/orders-put-expanded.png)
 
-**Interface Analysis:**
-
-The PUT endpoint interface shows:
-
-- **Endpoint**: `PUT /orders/{id} - Update an existing order`
-- **Description**: "Update the status and/or amount of an order by ID"
-- **Path Parameter**: `id` (required integer) - "Order ID" with example value `8`
-- **Request Body**: Optional fields `amount` and `status`
-
-**Request Configuration Shown:**
-- ID: `8` (updating order with ID 8)
-- Request body:
-  ```json
-  {
-    "amount": 1299.99,
-    "status": "shipped"
-  }
-  ```
+The PUT interface shows:
+- **Path parameter** (id) - the order ID to update
+- **Request body** - optional fields for amount and status
 
 ![PUT Orders - Response Part 1](./screenshots/orders-put-response-part1.png)
 
-**Response Analysis:**
-
-After executing the PUT request:
-
-1. **Curl Command Generated**:
-   ```bash
-   curl -X 'PUT' \
-     'http://localhost:3000/orders/8' \
-     -H 'accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -d '{"amount": 1299.99, "status": "shipped"}'
-   ```
-
-2. **Server Response**:
-   - **Code**: `200` (OK - success!)
-   - **Response Body**: Updated order object with new values
-   - Note: `item_name` and `date_created` remain unchanged
+Response shows the updated order with new values. The `item_name` and `date_created` fields remain unchanged.
 
 ![PUT Orders - Response Part 2](./screenshots/orders-put-response-part2.png)
 
-**Error Documentation:**
-
-Shows possible error responses:
-- **404 - Order not found**: When the specified ID doesn't exist
-- **400 - Validation error**: When amount or status values are invalid
+Documentation shows error responses: 400 (invalid values), 404 (order not found), 500 (database error).
 
 ---
 
-## 🗑️ DELETE /orders/{id} - Delete Order
+## 🗑️ 4. DELETE /orders/{id} - Delete Order
 
 Permanently remove an order from the database.
-
-### Endpoint
-
-```
-DELETE /orders/{id}
-```
 
 ### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | integer | ✅ Yes | The unique identifier of the order to delete |
+| `id` | integer | Yes | Order ID to delete |
 
 ### Response Codes
 
-| Code | Description | Response Body |
-|------|-------------|---------------|
-| `204` | No Content | Empty (order deleted successfully) |
-| `404` | Not Found | `{"error": "Order not found", "message": "No order found with ID {id}"}` |
-| `429` | Too Many Requests | Rate limit error |
-| `500` | Internal Server Error | Database error |
+| Code | Description |
+|------|-------------|
+| `204` | No Content - Order deleted successfully |
+| `404` | Not Found - No order with given ID |
+| `500` | Database error |
 
 ### Examples
 
-#### Successful Deletion
-
 ```bash
+# Successful deletion
 curl -X DELETE http://localhost:3000/orders/62
-```
 
-**Response**: HTTP 204 No Content (empty body)
-
-#### Delete Non-Existent Order
-
-```bash
+# Attempting to delete non-existent order
 curl -X DELETE http://localhost:3000/orders/999
 ```
 
-**Response (404 Not Found):**
-```json
-{
-  "error": "Order not found",
-  "message": "No order found with ID 999"
-}
-```
-
-### Swagger UI Screenshots
+### Swagger UI - DELETE /orders/{id}
 
 ![DELETE Orders - Request Interface](./screenshots/delete-orders-expanded.png)
 
-**Interface Analysis:**
-
-The DELETE endpoint interface shows:
-
-- **Endpoint**: `DELETE /orders/{id} - Delete an order`
-- **Description**: "Remove an order from the database by ID"
-- **Visual Styling**: Red background indicating destructive operation
-- **Path Parameter**: `id` (required integer) with example value `999`
-- **No Request Body**: DELETE operations don't require a body
+The DELETE interface (styled in red to indicate destructive action) shows only the required path parameter `id`. No request body is needed.
 
 ![DELETE Orders - 404 Response](./screenshots/delete-orders-response.png)
 
-**Error Response Demonstration:**
-
-The screenshot shows what happens when deleting a non-existent order:
-
-1. **Curl Command**:
-   ```bash
-   curl -X 'DELETE' \
-     'http://localhost:3000/orders/999' \
-     -H 'accept: */*'
-   ```
-
-2. **Server Response**:
-   - **Code**: `404` - Error: Not Found
-   - **Response Body**:
-     ```json
-     {
-       "error": "Order not found",
-       "message": "No order found with ID 999"
-     }
-     ```
-
-3. **Response Headers**: Standard headers with rate limit info
-
-**Documentation Section**:
-- **204 - Order deleted successfully (no content)**: Successful deletion returns empty body
-- **404 - Order not found**: Detailed error when ID doesn't exist
-- **500 - Database error**: When deletion fails due to database issues
+This screenshot shows the 404 response when attempting to delete a non-existent order (ID 999). The error message clearly indicates "No order found with ID 999".
 
 ---
 
-## 📤 GET /orders/export - Export Data
+## 📤 5. GET /orders/export - Export Data
 
-Export all orders from the database as a downloadable file in CSV or JSON format.
-
-### Endpoint
-
-```
-GET /orders/export
-```
+Export all orders as a downloadable CSV or JSON file.
 
 ### Query Parameters
 
-| Parameter | Type | Required | Values | Description |
-|-----------|------|----------|--------|-------------|
-| `format` | string | ✅ Yes | `csv`, `json` | The export file format |
+| Parameter | Type | Required | Values |
+|-----------|------|----------|--------|
+| `format` | string | Yes | `csv` or `json` |
 
 ### Response Headers
 
-#### CSV Export
-
-| Header | Value |
-|--------|-------|
-| `Content-Type` | `text/csv; charset=utf-8` |
-| `Content-Disposition` | `attachment; filename=orders.csv` |
-
-#### JSON Export
-
-| Header | Value |
-|--------|-------|
-| `Content-Type` | `application/json` |
-| `Content-Disposition` | `attachment; filename=orders.json` |
-
-### CSV Format
-
-```csv
-"id","item_name","amount","status","date_created"
-1,"Wireless Mouse",500,"shipped","2026-01-14T05:08:44.152Z"
-2,"Gaming Keyboard",171.09,"shipped","2026-01-11T05:08:44.154Z"
-```
-
-**CSV Fields:**
-- Properly quoted string values
-- Headers as first row
-- All orders included (no pagination)
-
-### JSON Format
-
-```json
-[
-  {
-    "id": 1,
-    "item_name": "Wireless Mouse",
-    "amount": 500,
-    "status": "shipped",
-    "date_created": "2026-01-14T05:08:44.152Z"
-  },
-  {
-    "id": 2,
-    "item_name": "Gaming Keyboard",
-    "amount": 171.09,
-    "status": "shipped",
-    "date_created": "2026-01-11T05:08:44.154Z"
-  }
-]
-```
-
-**JSON Features:**
-- Pretty-printed with 2-space indentation
-- Array of all order objects
-- Easy to import into other applications
-
-### HTTP Status Codes
-
-| Code | Description | Scenario |
-|------|-------------|----------|
-| `200` | OK | Export successful, file download initiated |
-| `400` | Bad Request | Invalid or missing format parameter |
-| `429` | Too Many Requests | Rate limit exceeded |
-| `500` | Internal Server Error | Database query or CSV conversion failed |
+| Format | Content-Type | Content-Disposition |
+|--------|--------------|---------------------|
+| CSV | `text/csv; charset=utf-8` | `attachment; filename=orders.csv` |
+| JSON | `application/json` | `attachment; filename=orders.json` |
 
 ### Examples
 
-#### Export as CSV
-
 ```bash
-# Download and save as orders.csv
+# Export as CSV
 curl "http://localhost:3000/orders/export?format=csv" -o orders.csv
-```
 
-#### Export as JSON
-
-```bash
-# Download and save as orders.json
+# Export as JSON
 curl "http://localhost:3000/orders/export?format=json" -o orders.json
 ```
 
-#### Invalid Format Error
-
-```bash
-curl "http://localhost:3000/orders/export?format=xml"
-```
-
-**Response (400 Bad Request):**
-```json
-{
-  "error": "Invalid format",
-  "message": "Format must be either \"json\" or \"csv\""
-}
-```
-
-### Swagger UI Screenshots
+### Swagger UI - GET /orders/export
 
 ![Export - Interface](./screenshots/orders-export-expanded.png)
 
-**Interface Analysis:**
-
-The export endpoint shows:
-
-- **Endpoint**: `GET /orders/export - Export all orders`
-- **Description**: "Export all orders in JSON or CSV format"
-- **Query Parameter**: `format` (required)
-  - Dropdown with options: `json`, `csv`
-  - Description: "Export format (json or csv)"
+The export endpoint shows the required `format` parameter with dropdown options for `csv` or `json`.
 
 ![Export - CSV Response](./screenshots/orders-export-response-csv.png)
 
-**CSV Export Response:**
-
-After executing with `format=csv`:
-
-1. **Request URL**: `http://localhost:3000/orders/export?format=csv`
-
-2. **Server Response**:
-   - **Code**: `200` (OK)
-   - **Response Body**: "Download file" link
-   
-3. **Response Headers**:
-   - `content-disposition: attachment; filename=orders.csv`
-   - `content-type: text/csv; charset=utf-8`
-   - `content-length: 3834` (file size in bytes)
+CSV export response shows:
+- **Download file** link to download orders.csv
+- **Response headers** with `content-disposition: attachment; filename=orders.csv`
 
 ![CSV File Opened](./screenshots/orders-export-response-csv-file-opened.png)
 
-**Downloaded CSV File:**
-
-The screenshot shows the exported CSV file opened in an editor/viewer:
-
-- **First Row**: Column headers (`id`, `item_name`, `amount`, `status`, `date_created`)
-- **Data Rows**: All orders with properly formatted values
-- **Quoted Strings**: String values are quoted to handle special characters
-- **Consistent Format**: Ready for import into Excel, databases, or other applications
+The downloaded CSV file shows all orders with proper formatting: headers on first row, quoted string values.
 
 ![Export - JSON Response Part 1](./screenshots/orders-export-response-json-part1.png)
 
-**JSON Export Response:**
-
-Shows the response headers and download link for JSON format.
+JSON export shows similar structure with download link for orders.json.
 
 ![Export - JSON Response Part 2](./screenshots/orders-export-json-part2.png)
 
-**Documentation Section:**
-
-Shows:
-- **200 - Successfully exported orders**: File download response
-- **400 - Invalid format parameter**: Error when format is not `json` or `csv`
-- **500 - Database error**: When query fails
+Documentation for export endpoint error responses.
 
 ![JSON File Opened](./screenshots/orders-export-response-json-file-opened.png)
 
-**Downloaded JSON File:**
-
-The screenshot shows the exported JSON file opened in VS Code:
-
-- **Pretty-Printed**: 2-space indentation for readability
-- **Complete Data**: All order fields present
-- **Array Structure**: Easy to parse programmatically
-- **Syntax Highlighting**: JSON recognized by editor
-- **Multiple Tabs Visible**: Shows orders.csv is also available
-
----
-
-## 📖 Interactive API Documentation (Swagger UI)
-
-### Accessing Swagger UI
-
-```
-http://localhost:3000/api-docs
-```
-
-![Swagger UI Overview](./screenshots/swagger-overview.png)
-
-**Swagger UI Interface:**
-
-The main Swagger UI page displays:
-
-1. **API Title**: "Orders Management API" with version badge (1.0.0)
-2. **API Description**: "A REST API for managing orders with pagination and filtering support"
-3. **Contact Link**: API Support email
-4. **Server Dropdown**: Development server at `http://localhost:3000`
-5. **Collapsible Tags**: "Orders" section containing all endpoints
-
-**Endpoint Color Coding:**
-- 🟦 **GET** (Blue): `/orders` - Retrieve a list of orders
-- 🟩 **POST** (Green): `/orders` - Create a new order
-- 🟦 **GET** (Blue): `/orders/export` - Export all orders
-- 🟧 **PUT** (Orange): `/orders/{id}` - Update an existing order
-- 🟥 **DELETE** (Red): `/orders/{id}` - Delete an order
-
-### Using Swagger UI
-
-1. **Expand an Endpoint**: Click on any endpoint row to expand it
-2. **View Parameters**: See all available query/path parameters
-3. **Click "Try it out"**: Enable the parameter editors
-4. **Fill in Values**: Enter your test data
-5. **Click "Execute"**: Send the request to the API
-6. **View Response**: See the status code, headers, and body
-
-### Benefits of Swagger UI
-
-| Feature | Benefit |
-|---------|---------|
-| **Interactive Testing** | Test API without writing code or curl commands |
-| **Auto-Generated Curl** | Copy-paste ready curl commands for scripts |
-| **Schema Visualization** | Understand request/response structure instantly |
-| **Validation Feedback** | See exactly what went wrong with 400 errors |
-| **Rate Limit Visibility** | Monitor remaining requests in headers |
+The downloaded JSON file is pretty-printed with 2-space indentation for readability
 
 ---
 
@@ -1672,15 +1123,3 @@ INSERT INTO orders (item_name, amount, status, date_created) VALUES
 ```
 
 ---
-
-## 📜 License
-
-ISC License
-
----
-
-## 👨‍💻 Author
-
-Module 7 Task 3 - Orders Management API
-
-Built with ❤️ using Node.js, Express.js, and SQLite
