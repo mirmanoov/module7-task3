@@ -5,11 +5,21 @@
 [![SQLite](https://img.shields.io/badge/SQLite-v5.1.7-003B57?style=flat&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Jest](https://img.shields.io/badge/Tests-21%20Passed-C21325?style=flat&logo=jest&logoColor=white)](https://jestjs.io/)
 [![Swagger](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?style=flat&logo=swagger&logoColor=black)](https://swagger.io/)
+---
+
+## 🤖 AI-Assisted Development
+
+This project was developed with the assistance of **GitHub Copilot**. You can review the full details of the AI's contributions, development metrics, and session analysis in the report below:
+
+👉 **[🚀 GitHub Copilot Metrics Report](./COPILOT_REPORT.md)**
+
+*Includes breakdown of code contribution (99.8%), development time saved (86.5%), and key learnings.*
 
 ---
 
 ## 📋 Table of Contents
 
+- [AI-Assisted Development](#-ai-assisted-development)
 - [Overview](#-overview)
 - [Features](#-features)
 - [Quick Start](#-quick-start)
@@ -155,59 +165,7 @@ Swagger UI available at http://localhost:3000/api-docs
 
 ---
 
-## 📖 Interactive API Documentation (Swagger UI)
-
-This project includes **Swagger UI** — an interactive, browser-based API documentation and testing tool. Access it at:
-
-```
-http://localhost:3000/api-docs
-```
-
-### Swagger UI Overview
-
-![Swagger UI Overview](./screenshots/swagger-overview.png)
-
-**What You See in Swagger UI:**
-
-The main page displays all 5 API endpoints organized under the "Orders" tag:
-
-| Color | Method | Endpoint | Description |
-|-------|--------|----------|-------------|
-| 🟦 Blue | `GET` | `/orders` | Retrieve orders with filtering, sorting, and pagination |
-| 🟩 Green | `POST` | `/orders` | Create a new order |
-| 🟦 Blue | `GET` | `/orders/export` | Export all orders as CSV or JSON |
-| 🟧 Orange | `PUT` | `/orders/{id}` | Update an existing order |
-| 🟥 Red | `DELETE` | `/orders/{id}` | Delete an order |
-
-**Key Interface Elements:**
-
-1. **API Title & Version**: "Orders Management API v1.0.0"
-2. **Server Dropdown**: Select between development/production servers
-3. **Expandable Endpoints**: Click any endpoint to see full documentation
-4. **Schema Definitions**: View request/response structures
-
-### How to Use Swagger UI
-
-1. **Navigate** to `http://localhost:3000/api-docs`
-2. **Click** on any endpoint to expand it
-3. **Click "Try it out"** to enable input fields
-4. **Fill in parameters** (query params, request body, path params)
-5. **Click "Execute"** to send the request
-6. **View the response** including status code, headers, and body
-
-### Benefits
-
-| Feature | Description |
-|---------|-------------|
-| **Interactive Testing** | Test all endpoints without writing curl commands |
-| **Auto-Generated Curl** | Copy the exact curl command for each request |
-| **Schema Visualization** | See request/response structures with examples |
-| **Real-Time Responses** | View actual server responses with headers |
-| **Rate Limit Monitoring** | Check remaining requests via response headers |
-
----
-
-## 📚 API Endpoints
+##  API Endpoints
 
 ### Endpoint Summary
 
@@ -282,7 +240,7 @@ After clicking Execute, Swagger displays:
 
 ![GET Orders - Response Part 2](./screenshots/get-orders-response-part2.png)
 
-The documentation section shows the response schema with pagination metadata and possible error responses (500 Database error).
+As shown in the screenshot above, the response schema includes pagination metadata and possible error responses (500 Database error).
 
 ---
 
@@ -348,7 +306,7 @@ A successful response shows:
 
 ![POST Orders - Response Part 2](./screenshots/post-orders-response-part2.png)
 
-Documentation shows possible responses: 201 (success), 400 (validation error), and 500 (database error).
+As shown in the screenshot, possible responses include: 201 (success), 400 (validation error), and 500 (database error).
 
 ---
 
@@ -411,7 +369,7 @@ Response shows the updated order with new values. The `item_name` and `date_crea
 
 ![PUT Orders - Response Part 2](./screenshots/orders-put-response-part2.png)
 
-Documentation shows error responses: 400 (invalid values), 404 (order not found), 500 (database error).
+As shown in the screenshot, error responses include: 400 (invalid values), 404 (order not found), 500 (database error).
 
 ---
 
@@ -504,11 +462,63 @@ JSON export shows similar structure with download link for orders.json.
 
 ![Export - JSON Response Part 2](./screenshots/orders-export-json-part2.png)
 
-Documentation for export endpoint error responses.
+As shown in the screenshot, the export endpoint also handles error responses for invalid format parameters.
 
 ![JSON File Opened](./screenshots/orders-export-response-json-file-opened.png)
 
-The downloaded JSON file is pretty-printed with 2-space indentation for readability
+The downloaded JSON file is pretty-printed with 2-space indentation for readability.
+
+---
+
+## 📖 Interactive API Documentation (Swagger UI)
+
+This project includes **Swagger UI** — an interactive, browser-based API documentation and testing tool. Access it at:
+
+```
+http://localhost:3000/api-docs
+```
+
+### Swagger UI Overview
+
+![Swagger UI Overview](./screenshots/swagger-overview.png)
+
+**What You See in Swagger UI:**
+
+The main page displays all 5 API endpoints organized under the "Orders" tag:
+
+| Color | Method | Endpoint | Description |
+|-------|--------|----------|-------------|
+| 🟦 Blue | `GET` | `/orders` | Retrieve orders with filtering, sorting, and pagination |
+| 🟩 Green | `POST` | `/orders` | Create a new order |
+| 🟦 Blue | `GET` | `/orders/export` | Export all orders as CSV or JSON |
+| 🟧 Orange | `PUT` | `/orders/{id}` | Update an existing order |
+| 🟥 Red | `DELETE` | `/orders/{id}` | Delete an order |
+
+**Key Interface Elements:**
+
+1. **API Title & Version**: "Orders Management API v1.0.0"
+2. **Server Dropdown**: Select between development/production servers
+3. **Expandable Endpoints**: Click any endpoint to see full documentation
+4. **Schema Definitions**: View request/response structures
+
+### How to Use Swagger UI
+
+1. **Navigate** to `http://localhost:3000/api-docs`
+2. **Click** on any endpoint to expand it
+3. **Click "Try it out"** to enable input fields
+4. **Fill in parameters** (query params, request body, path params)
+5. **Click "Execute"** to send the request
+6. **View the response** including status code, headers, and body
+
+### Benefits
+
+| Feature | Description |
+|---------|-------------|
+| **Interactive Testing** | Test all endpoints without writing curl commands |
+| **Auto-Generated Curl** | Copy the exact curl command for each request |
+| **Schema Visualization** | See request/response structures with examples |
+| **Real-Time Responses** | View actual server responses with headers |
+| **Rate Limit Monitoring** | Check remaining requests via response headers |
 
 ---
 
